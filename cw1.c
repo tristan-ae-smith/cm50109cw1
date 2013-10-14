@@ -1,34 +1,36 @@
 #include <stdio.h>
 
 typedef struct node {
-	node *left, *right;
+	struct node *left, *right;
 	int age;
 	char fName[64]; //TODO validate assumptions
 	char oName[64];
 	int code;
-};
+} node;
+
+//'comparator' is now a pointer to a function
+// takes two node pointers and returns an int
+// -1 for <; 0 for ==; 1 for >
+typedef int (*comparator)(node*, node*);
 
 typedef struct tree {
 	node *root;
-	node* (*comparator)(node *a, node *b) = NULL;
-};
+	comparator sortType;
+} tree;
 
 //add a node
-node* addNode(tree *root, node* newNode) {
-	if (root->comparator == NULL) {
-		printf("Node %d added to uninitialised tree; discarded.\n", newNode.code);
-		return root;
+tree* addNode(tree *t, node *n) {
+	if (t->sortType == NULL) {
+		printf("Node %d added to uninitialised tree; discarded.\n", n->code);
+		return t;
 	}
 
 	//return root for future chaining
-	return root;
+	return t;
 }
 
-/* This is a
-	block comment */
-int main(void)
+int main(void)//TODO take args
 {
-	// do something interesting
-	printf("hello world\n");
+	// do something with the args, maybe
 	return 0;
 }
