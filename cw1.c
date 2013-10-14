@@ -18,6 +18,10 @@ typedef struct tree {
 	comparator sortType;
 } tree;
 
+int byAge(node *x, node *y) {
+	return x->age - y->age;
+}
+
 //add a node
 tree* addNode(tree *t, node *n) {
 	if (t->sortType == NULL) {
