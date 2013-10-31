@@ -122,7 +122,7 @@ tree* addNode(tree *t, node *n) {
 }
 
 void printHelp() {
-	printf("cw1:\tread, merge and sort data records from files\n");
+	printf("treesort:\tread, merge and sort data records from files\n");
 	printf("Usage: cw1 file1 <file2 file3 ..> -[flags]\n");
 	printf("\t Reads file1 and optional additional files\n");
 	printf("\t Sorts by age and prints to standard output\n");
@@ -198,18 +198,37 @@ int main(int argc, char *argv[])
 
 			if ( (file = fopen(argv[i], "r")) == NULL) {
 				printf("Can't open %s\n", argv[i]);
-				return 1;
+				break;
 			}
 
 			while (!feof(file)) {
 				if (fscanf(file, "%d %d %s ", &code, &age, fName) != 3) {
-					break;
+					fgets(oName, ON_LENGTH, file);
+					continue;
 				}
 				fgets(oName, ON_LENGTH, file);
+
+				// handle middle names
+				char *lastSpace = strrchr(oName, ' ');
+				if (lastSpace != NULL) {
+					printf("Space found at %p\n", lastSpace);
+					*lastSpace = '\0';
+					printf("%s", oName);
+					int fLen = strlen(fName);
+					fName[fLen] = ' ';
+					strcpy(fName + fLen + 1, oName);
+					strcpy(oName, lastSpace + 1);
+				}
+
 				addNode(people, makeNode(code, age, fName, oName));
-				// printf("%d %d %s %s", code, age, fName, oName);
+				printf("%d, %d, %s, %s", code, age, fName, oName);
 			}
 		}
+	}
+
+	if (people->root == NULL) {
+		printf("No valid data read\n");
+		return 0;
 	}
 
 	printf("Code\tAge\tFirst\tLast\n");
