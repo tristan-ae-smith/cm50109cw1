@@ -1,10 +1,13 @@
 #include <stdio.h>
 
+#define ON_LENGTH 64
+#define FN_LENGTH 64
+
 typedef struct node {
 	struct node *left, *right;
 	int age;
-	char fName[64]; //TODO validate assumptions
-	char oName[64];
+	char fName[ON_LENGTH]; //TODO validate assumptions
+	char oName[FN_LENGTH];
 	int code;
 } node;
 
@@ -29,12 +32,35 @@ tree* addNode(tree *t, node *n) {
 		return t;
 	}
 
-	//return root for future chaining
+	//return tree for future chaining
 	return t;
 }
 
-int main(void)//TODO take args
+int main(int argc, char *argv[])
 {
+	// tree *people = malloc(sizeof(tree));
+	// people->comparator = &byAge;
+
+	int i;
+	for (i = 1; i < argc; ++i)
+	{
+		FILE *file;
+		int code, age;
+		char fName[FN_LENGTH], oName[ON_LENGTH];
+
+		if ( (file = fopen(argv[i], "r")) == NULL) {
+			printf("Can't open %s\n", argv[i]);
+			return 1;
+		}
+
+		while (!feof(file)) {
+			if (fscanf(file, "%d %d %s ", &code, &age, fName) != 3) {
+				break;
+			}
+			fgets(oName, ON_LENGTH, file);
+			printf("%d %d %s %s", code, age, oName, oName);
+		}
+	}
 	// do something with the args, maybe
 	return 0;
 }
