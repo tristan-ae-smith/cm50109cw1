@@ -5,7 +5,6 @@
 
 #define ON_LENGTH 64
 #define FN_LENGTH 64
-#define DEBUG 1
 
 typedef struct node {
 	struct node *left, *right;
@@ -43,7 +42,7 @@ typedef void (*operator)(node*);
 
 //operator to print the given node
 void printer(node *p) {
-	printf("%d %d %s %s", p->code, p->age, p->fName, p->oName);
+	printf("%d\t%d\t%s\t%s", p->code, p->age, p->fName, p->oName);
 	return;
 }
 
@@ -155,9 +154,9 @@ int main(int argc, char *argv[])
 	for (i = 1; i < argc; ++i)
 	{
 		if (argv[i][0] == '-') {
-			/* deal with flags */
-			int j = 1;
-			while (argv[i][j] != '\0') {
+			// deal with flags
+			int j;
+			for (j = 1; argv[i][j] != '\0'; ++j) {
 				char flag = tolower(argv[i][j]);
 
 				switch (flag) {
@@ -185,12 +184,9 @@ int main(int argc, char *argv[])
 					default: 
 						printf("Unrecognised flag: %c\n", flag);
 				}
-				j++;
 			}
 		}
 	}
-
-// printf("Flags checked\n");
 
 	for (i = 1; i < argc; ++i)
 	{
@@ -216,6 +212,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	printf("Code\tAge\tFirst\tLast\n");
 	people->visitAll(people->root, &printer);
 
 	return 0;
