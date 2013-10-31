@@ -7,12 +7,6 @@
 #define FN_LENGTH 64
 #define DEBUG 1
 
-void errlog(char message[]) {
-	if (DEBUG) {
-		printf("%s", message);
-	}
-}
-
 typedef struct node {
 	struct node *left, *right;
 	int code;
@@ -83,8 +77,8 @@ void reverse(node *n, operator op) {
 
 typedef struct tree {
 	node *root;
-	comparator sortType;
-	visitor visitOrder;
+	comparator compare;
+	visitor visitAll;
 } tree;
 
 node* makeNode(int code, int age, char *fName, char *oName) {
@@ -93,16 +87,13 @@ node* makeNode(int code, int age, char *fName, char *oName) {
 	n->age = age;
 	strcpy(n->fName, fName);
 	strcpy(n->oName, oName);
-	// n->fName = fName;
-	// n->oName = oName;
 	n->left = n->right = NULL;
 	return n;
 }
 
 //add a node 		//TODO make this use a pointer-to-pointer
 tree* addNode(tree *t, node *n) {
-	printf("Adding node %d\n", n->code);
-	if (t->sortType == NULL) {
+	if (t->compare == NULL) {
 		printf("Node %d added to uninitialised tree; discarded.\n", n->code);
 		return t;
 	}
@@ -118,10 +109,10 @@ tree* addNode(tree *t, node *n) {
 	//iterate down into the tree until we find an empty pointer in the right place
 	while (next != NULL) {
 		parent = next;
-		next = ( t->sortType(parent, n) > 0 )? parent->left : parent->right;
+		next = ( t->compare(parent, n) > 0 )? parent->left : parent->right;
 	}
 	
-	if ( t->sortType(parent, n) > 0 ) {
+	if ( t->compare(parent, n) > 0 ) {
 		parent->left = n;
 	} else {
 		parent->right = n;
@@ -156,12 +147,9 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
-	printf("Initialising\n");
 	tree *people = malloc(sizeof(tree));
-	people->sortType = &byAge;
-	people->visitOrder = &traverse;
-
-printf("Tree created\n");
+	people->compare = &byAge;
+	people->visitAll = &traverse;
 
 	int i;
 	for (i = 1; i < argc; ++i)
@@ -180,16 +168,19 @@ printf("Tree created\n");
 						runTests();
 						return 0;
 					case 'r':
-						people->visitOrder = &reverse;
+						people->visitAll = &reverse;
 						break;
 					case 'c':
-						people->sortType = &byCode;
+						people->compare = &byCode;
+						break;
+					case 'a':
+						people->compare = &byAge;
 						break;
 					case 'f':
-						people->sortType = &byFirst;
+						people->compare = &byFirst;
 						break;
 					case 'l':
-						people->sortType = &byLast;
+						people->compare = &byLast;
 						break;
 					default: 
 						printf("Unrecognised flag: %c\n", flag);
@@ -199,13 +190,12 @@ printf("Tree created\n");
 		}
 	}
 
-printf("Flags checked\n");
+// printf("Flags checked\n");
 
 	for (i = 1; i < argc; ++i)
 	{
 		if (argv[i][0] != '-')
 		{
-			printf("Processing %s\n", argv[i]);
 			FILE *file;
 			int code, age;
 			char fName[FN_LENGTH], oName[ON_LENGTH];
@@ -221,12 +211,12 @@ printf("Flags checked\n");
 				}
 				fgets(oName, ON_LENGTH, file);
 				addNode(people, makeNode(code, age, fName, oName));
-				printf("%d %d %s %s", code, age, fName, oName);
+				// printf("%d %d %s %s", code, age, fName, oName);
 			}
 		}
 	}
 
-	people->visitOrder(people->root, &printer);
+	people->visitAll(people->root, &printer);
 
 	return 0;
 }
