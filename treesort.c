@@ -149,14 +149,7 @@ void printHelp() {
 }
 
 // pesudorandomly generate test data that will sort in four different orders
-void runTests() {
-	tree *test = malloc(sizeof(tree));
-	test->compare = &byAge;
-	// test->compare = &byCode;
-	// test->compare = &byFirst;
-	// test->compare = &byLast;
-	test->visitAll = &traverse;
-	// test->visitAll = &reverse;
+void addTestData(tree *test) {
 
 	int i, j;
 	char first[10], last[10];
@@ -168,9 +161,6 @@ void runTests() {
 		addNode(test, makeNode(i, j, first, last));
 	}
 
-	printf("Code\tAge\tFirst\tLast\n");
-	test->visitAll(test->root, &printer);
-	
 	return;
 }
 
@@ -185,6 +175,9 @@ int main(int argc, char *argv[])
 	tree *people = malloc(sizeof(tree));
 	people->compare = &byAge;
 	people->visitAll = &traverse;
+
+	// track if the -t flag was supplied
+	char runTests = 0;
 
 	int i;
 	// scan for flags
@@ -201,8 +194,8 @@ int main(int argc, char *argv[])
 						printHelp();
 						return 0;
 					case 't':
-						runTests();
-						return 0;
+						runTests = 1;
+						break;
 					case 'r':
 						people->visitAll = &reverse;
 						break;
@@ -223,6 +216,11 @@ int main(int argc, char *argv[])
 				}
 			}
 		}
+	}
+
+	// add test data after comparator is specified
+	if (runTests) {
+		addTestData(people);
 	}
 
 	// scan for filenames
