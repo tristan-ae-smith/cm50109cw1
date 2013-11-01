@@ -31,3 +31,5 @@ Control flow:
 	After printing a basic table header, the selected visitor is used to traverse the tree, and the default operator is used to print each node in-order.
 
 Subtleties:
+	Data input:
+		L247-262. fscanf() is used to read the first three data items (code, age and first name). If it fails to return three valid items (for example, if a character is provided in code or age), the line is discarded and execution continues on the next line. Otherwise, the remainder of the line is retrieved using fgets(). A pointer to the last space [' '] is obtained - if not NULL, this indicates the presence of middle names. In that instance, the last space is set to '\0' - this simplifies the use of strcpy() to transfer the middle names to the end of the firstname field, and then again to move the last name forward to the start of the last name field.
