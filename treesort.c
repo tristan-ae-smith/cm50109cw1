@@ -3,14 +3,16 @@
 #include <stdio.h>
 #include <ctype.h>
 
+// assumed maximum lengths
 #define ON_LENGTH 64
 #define FN_LENGTH 64
 
+// node stores references to left and right children, variables for data
 typedef struct node {
 	struct node *left, *right;
 	int code;
 	int age;
-	char fName[FN_LENGTH]; //firstName		//TODO validate assumptions
+	char fName[FN_LENGTH]; //firstName
 	char oName[ON_LENGTH]; //otherNames
 } node;
 
@@ -40,7 +42,7 @@ int byLast(node *x, node *y) {
 // takes a node pointer and performs some operation
 typedef void (*operator)(node*);
 
-//operator to print the given node
+// operator to print the given node
 void printer(node *p) {
 	printf("%d\t%d\t%s\t%s", p->code, p->age, p->fName, p->oName);
 	return;
@@ -52,7 +54,7 @@ void printer(node *p) {
 // and performs the operator
 typedef void (*visitor)(node*, operator);
 
-//visitor to perform left-to-right traversal of the tree
+// visitor to perform left-to-right traversal of the tree
 void traverse(node *n, operator op) {
 	if (n->left != NULL) {
 		traverse(n->left, op);
@@ -63,7 +65,7 @@ void traverse(node *n, operator op) {
 	}
 }
 
-//visitor to perform right-to-left (reverse) traversal of the tree
+// visitor to perform right-to-left (reverse) traversal of the tree
 void reverse(node *n, operator op) {
 	if (n->right != NULL) {
 		reverse(n->right, op);
@@ -74,14 +76,19 @@ void reverse(node *n, operator op) {
 	}
 }
 
+// tree stores a link to the first node and the selected comparator and visitor
 typedef struct tree {
 	node *root;
 	comparator compare;
 	visitor visitAll;
 } tree;
 
+
 node* makeNode(int code, int age, char *fName, char *oName) {
-	node *n = malloc(sizeof(node));
+	node *n;
+	if (NULL == (n = malloc(sizeof(node)))) {
+		return NULL;
+	}
 	n->code = code;
 	n->age = age;
 	strcpy(n->fName, fName);
@@ -90,13 +97,19 @@ node* makeNode(int code, int age, char *fName, char *oName) {
 	return n;
 }
 
-//add a node 		//TODO make this use a pointer-to-pointer
+// add a node n to tree t using the tree's selected comparator
 tree* addNode(tree *t, node *n) {
+	if (NULL == n) {
+		printf("Empty node added.\n");
+		return t;
+	}
+
 	if (t->compare == NULL) {
 		printf("Node %d added to uninitialised tree; discarded.\n", n->code);
 		return t;
 	}
 
+	// special case if the tree is empty so far
 	if (t->root == NULL) {
 		t->root = n;
 		return t;
@@ -135,8 +148,30 @@ void printHelp() {
 	return;
 }
 
+// pesudorandomly generate test data that will sort in four different orders
 void runTests() {
+	tree *test = malloc(sizeof(tree));
+	test->compare = &byAge;
+	// test->compare = &byCode;
+	// test->compare = &byFirst;
+	// test->compare = &byLast;
+	test->visitAll = &traverse;
+	// test->visitAll = &reverse;
 
+	int i, j;
+	char first[10], last[10];
+
+	for (i = j = 1; i < 25; ++i) {
+		sprintf(first, "First%d", (25-i));
+		sprintf(last, "Last%d\n", (100-j));
+		j = i + ((j%2==0)? j/2 : j + 3);
+		addNode(test, makeNode(i, j, first, last));
+	}
+
+	printf("Code\tAge\tFirst\tLast\n");
+	test->visitAll(test->root, &printer);
+	
+	return;
 }
 
 int main(int argc, char *argv[])
@@ -146,11 +181,13 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
+	// initialise a tree
 	tree *people = malloc(sizeof(tree));
 	people->compare = &byAge;
 	people->visitAll = &traverse;
 
 	int i;
+	// scan for flags
 	for (i = 1; i < argc; ++i)
 	{
 		if (argv[i][0] == '-') {
@@ -188,32 +225,36 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	// scan for filenames
 	for (i = 1; i < argc; ++i)
 	{
 		if (argv[i][0] != '-')
 		{
 			FILE *file;
+			// temporary variables to read into
 			int code, age;
 			char fName[FN_LENGTH], oName[ON_LENGTH];
 
+			// attempt to open the file
 			if ( (file = fopen(argv[i], "r")) == NULL) {
 				printf("Can't open %s\n", argv[i]);
-				break;
+				continue;
 			}
 
+			// read each line to the end of the file
 			while (!feof(file)) {
+				// attempt to read the first three items
 				if (fscanf(file, "%d %d %s ", &code, &age, fName) != 3) {
 					fgets(oName, ON_LENGTH, file);
 					continue;
 				}
+				// grab the remainder of the line
 				fgets(oName, ON_LENGTH, file);
 
-				// handle middle names
+				// handle middle names, for full explanation see readme
 				char *lastSpace = strrchr(oName, ' ');
 				if (lastSpace != NULL) {
-					printf("Space found at %p\n", lastSpace);
 					*lastSpace = '\0';
-					printf("%s", oName);
 					int fLen = strlen(fName);
 					fName[fLen] = ' ';
 					strcpy(fName + fLen + 1, oName);
@@ -221,17 +262,21 @@ int main(int argc, char *argv[])
 				}
 
 				addNode(people, makeNode(code, age, fName, oName));
-				printf("%d, %d, %s, %s", code, age, fName, oName);
+				// printf("%d, %d, %s, %s", code, age, fName, oName);
 			}
 		}
 	}
 
+	// if all files were unopenable or all data corrupt
 	if (people->root == NULL) {
 		printf("No valid data read\n");
-		return 0;
+		return 1;
 	}
 
+	// print a simple table header
 	printf("Code\tAge\tFirst\tLast\n");
+
+	// use the selected visitor to print each node in-order
 	people->visitAll(people->root, &printer);
 
 	return 0;
