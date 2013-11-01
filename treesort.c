@@ -123,9 +123,9 @@ tree* addNode(tree *t, node *n) {
 
 void printHelp() {
 	printf("treesort:\tread, merge and sort data records from files\n");
-	printf("Usage: ./treesort file1 <file2 file3 ..> -[flags]\n");
-	printf("\t Reads file1 and optional additional files\n");
-	printf("\t Sorts by age and prints to standard output\n");
+	printf("Usage:\t\ttreesort file1 <file2 file3 ..> -[flags]\n");
+	printf("\t\tReads file1 and optional additional files\n");
+	printf("\t\tSorts by age and prints to standard output\n");
 	printf("Flags:\n");
 	printf("\t-r\treverse output order\n");
 	printf("\t-c\tsort by code\n");
