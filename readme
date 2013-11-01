@@ -1,0 +1,33 @@
+treesort:	read, merge and sort data records from files
+
+Usage:		treesort file1 <file2 file3 ..> -[flags]
+			Reads file1 and optional additional files
+			Sorts by age and prints to standard output
+
+Flags:
+	-r	reverse output order
+	-c	sort by code
+	-f	sort by first name
+	-l	sort by last name
+	-h	print help text
+
+Structure:
+	A number of structures and type definitions are used to support clear, maintainable use of the code.
+	tree:
+		A structure containing a pointer to a root node, packaged with pointers to the selected visitor and comparator functions.
+	node:
+		A structure containing pointers to right and left child nodes, packaged with variables for code, age, first name and last name. Node implementations could vary for other purposes, and could also include a pointer to the parent, though this was considered unnecessary for this project.
+	comparator:
+		A type definition for comparison functions. Takes two node pointers a returns an integer conforming to a popular standard for comparators: negative for < , zero for == and positive for > .
+	visitor:
+		A type definition for recursive visitor functions. The inbuilt visitors (traverse() and reverse()) take a single node pointer and a pointer to an operator function, and call the operator on each child node recursively in varying orders.
+	operator:
+		A type definition for a single operation that may be performed on a node, or on a tree of nodes via a visitor. The inbuilt operator prints the data from the inbuilt nodes.
+
+Control flow:
+	After checking that a valid number of arguments have been supplied (and printing the help text above if not), an empty tree is initialised using the byAge() comparator and default traverse() visitor.
+	The arguments are then scanned to check for flags, which may be presented separately (-r -l) or as a group (-rf). If present, the -r flag replaces the tree's visitor with reverse(), and the -c -f -l flags replace the comparator with byCode(), byFirst() or byLast() respectively.
+	Once the flags have been processed, each of the remaining arguments are treated as file paths and opened. Each line is read, and each line containing valid data with the correct formatting forms a new node - the remainder are discarded. The nodes are added to the tree using the selected comparator to ensure that they remain in order - note that this is not a self-balancing tree, and so in the worst degenerate case the structure will resemble a linked list.
+	After printing a basic table header, the selected visitor is used to traverse the tree, and the default operator is used to print each node in-order.
+
+Subtleties:
