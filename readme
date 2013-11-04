@@ -32,7 +32,13 @@ Control flow:
 
 Subtleties:
 	Data input:
-		L245-260. fscanf() is used to read the first three data items (code, age and first name). If it fails to return three valid items (for example, if a character is provided in code or age), the line is discarded and execution continues on the next line. Otherwise, the remainder of the line is retrieved using fgets(). A pointer to the last space [' '] is obtained - if not NULL, this indicates the presence of middle names. In that instance, the last space is set to '\0' - this simplifies the use of strcpy() to transfer the middle names to the end of the firstname field, and then again to move the last name forward to the start of the last name field.
+		L274-289. fscanf() is used to read the first three data items (code, age and first name). If it fails to return three valid items (for example, if a character is provided in code or age), the line is discarded and execution continues on the next line. Otherwise, the remainder of the line is retrieved using fgets(). A pointer to the last space [' '] is obtained - if not NULL, this indicates the presence of middle names. In that instance, the last space is set to '\0' - this simplifies the use of strcpy() to transfer the middle names to the end of the firstname field, and then again to move the last name forward to the start of the last name field.
+	Tree construction:
+		L188-152. A standard comparator pattern is used to allow custom sort orders during tree construction. Nodes are added to the structure following the output of the selected comparator, which indicates a left-child if it is by some measure 'less than' (or equal to) the parent, and a right-child otherwise.
+	Data output:
+		L43-94. An in-order and reverse in-order visitor are supplied for standard traversal, and user-selectable via flags. Each recurses down from the root node, calling the printer operator to output the relevant data.
+	Tree freeing:
+		L155-162. The visitor-operator pattern is also used to free the tree. A post-order visitor is used to traverse each node in turn, calling a destructor only once the node's children have already been freed. Due to the simple nature of the tree construction, it is not necessary to check for cycles before freeing the nodes - in more complex scenarios this may be a consideration however.
 
 Testing:
 	The hidden flag -t may be used to add a batch of pseudorandomly generated test nodes to the current tree (respecting the specified comparator and visitor). These are designed to sort in four different orders across the four different fields, but all contain valid data. Alternatively, the included file test.dat can be specified, which contains a number of difficult data lines, from duplicate data to multiple middle names. Also included are three invalid data lines, which will not be read.

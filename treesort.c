@@ -48,6 +48,13 @@ void printer(node *p) {
 	return;
 }
 
+void destructor(node *p) {
+	if (NULL != p) {
+		free(p);
+	}
+	return;
+}
+
 //'visitor' is now a pointer to a recursive function
 // takes a node pointer and a function pointer
 // visits all nodes beneath that node in appropriate order
@@ -76,6 +83,16 @@ void reverse(node *n, operator op) {
 	}
 }
 
+void postOrder(node *n, operator op) {
+	if (n->right != NULL) {
+		postOrder(n->right, op);
+	}
+	if (n->left != NULL) {
+		postOrder(n->left, op);
+	}
+	op(n);
+}
+
 // tree stores a link to the first node and the selected comparator and visitor
 typedef struct tree {
 	node *root;
@@ -83,7 +100,7 @@ typedef struct tree {
 	visitor visitAll;
 } tree;
 
-
+// allocate memory for a new node, populate it, and return a pointer to it
 node* makeNode(int code, int age, char *fName, char *oName) {
 	node *n;
 	if (NULL == (n = malloc(sizeof(node)))) {
@@ -134,6 +151,17 @@ tree* addNode(tree *t, node *n) {
 	return t;
 }
 
+// traverse the tree in post order, freeing each node and then the tree
+int freeTree(tree *t) {
+	if (NULL == t) {
+		return 1;
+	}
+	postOrder(t->root, &destructor);
+	free(t);
+	return 0;
+}
+
+// print usage and flags information
 void printHelp() {
 	printf("treesort:\tread, merge and sort data records from files\n");
 	printf("Usage:\t\ttreesort file1 <file2 file3 ..> -[flags]\n");
@@ -164,6 +192,7 @@ void addTestData(tree *test) {
 	return;
 }
 
+// accept args, initialise tree, process flags, read files, output sorted data
 int main(int argc, char *argv[])
 {
 	if (argc == 1) {
@@ -276,6 +305,8 @@ int main(int argc, char *argv[])
 
 	// use the selected visitor to print each node in-order
 	people->visitAll(people->root, &printer);
+
+	freeTree(people);
 
 	return 0;
 }
