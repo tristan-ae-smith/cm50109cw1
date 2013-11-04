@@ -202,6 +202,7 @@ int main(int argc, char *argv[])
 
 	// initialise a tree
 	tree *people = malloc(sizeof(tree));
+	memset(people, 0, sizeof(tree));
 	people->compare = &byAge;
 	people->visitAll = &traverse;
 
@@ -291,6 +292,8 @@ int main(int argc, char *argv[])
 				addNode(people, makeNode(code, age, fName, oName));
 				// printf("%d, %d, %s, %s", code, age, fName, oName);
 			}
+
+			fclose(file);
 		}
 	}
 
